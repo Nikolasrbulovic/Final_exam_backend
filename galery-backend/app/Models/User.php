@@ -11,6 +11,10 @@ class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
 
+    public function galleries(){
+        return $this->hasMany(Gallery::class);
+    }
+
     /**
      * The attributes that are mass assignable.
      *

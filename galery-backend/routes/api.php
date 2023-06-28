@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\GalleryController;
 
 /*
@@ -25,6 +26,14 @@ Route::controller(AuthController::class)->group(function () {
 
 Route::controller(GalleryController::class)->group(function(){
     Route::post('create','store');
+    Route::get('/','index');
+    Route::get('/galleries/{id}','show');
+    Route::put('edit-galery/{id}','update');
+    Route::delete('{id}','destroy');
+});
+
+Route::controller(CommentsController::class)->group(function(){
+    Route::post('/storecomment','store');
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
