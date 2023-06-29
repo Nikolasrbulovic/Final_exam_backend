@@ -43,15 +43,17 @@ class AuthController extends Controller
     }
 
     public function register(Request $request){
-        if(Auth::check()) {
-            return redirect('/signup')->withErrors('You are already signed in!');
-        }
-        $request->validate([
+        // if(Auth::check()) {
+        //     return redirect('/signup')->withErrors('You are already signed in!');
+        // }
+        $validatedData = $request->validate([
             'first_name' => 'required|string',
             'last_name' => 'required|string',
             'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:8|regex:/^(?=.*[0-9])/',
+            'password' => 'required|string|confirmed|min:8|regex:/^(?=.*[0-9])/',
+            
         ]);
+    
 
         $user = User::create([
             'first_name' => $request->first_name,
