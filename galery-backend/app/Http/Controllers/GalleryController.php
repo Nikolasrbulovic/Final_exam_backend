@@ -39,15 +39,15 @@ class GalleryController extends Controller
             'image_urls' => ['required', 'array', 'min:1'],
             'image_urls.*' => ['url', function ($attribute, $value, $fail) {
                 $allowedExtensions = ['jpg', 'jpeg', 'png'];
-    
-                $extension = pathinfo(parse_url($value, PHP_URL_PATH), PATHINFO_EXTENSION);
+                $extension = pathinfo($value, PATHINFO_EXTENSION);
     
                 if (!in_array($extension, $allowedExtensions)) {
                     $fail('The ' . $attribute . ' must be a valid URL pointing to an image (JPG, JPEG, PNG).');
                 }
             }],
         ]);
-        // replace this with user_id from request
+       
+      // replace this with user_id from request
         $userId = Auth::id(); 
         
     
@@ -59,7 +59,7 @@ class GalleryController extends Controller
         'name' => $request->input('name'),
         'description' => $request->input('description'),
         'image_urls' => $request->input('image_urls'),
-        'user_id' => $userId,
+        'user_id' => $request->input('user_id'),
         ]);
        
        return response()->json(['message' => 'Gallery created successfully', 'gallery' => $gallery], 201);
