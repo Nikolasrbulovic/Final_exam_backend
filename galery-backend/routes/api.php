@@ -25,15 +25,16 @@ Route::controller(AuthController::class)->group(function () {
 });
 
 Route::controller(GalleryController::class)->group(function(){
-    Route::post('create','store');
+    Route::get('/my-galleries', 'myGalleries')->middleware('auth');
+    Route::post('create','store')->middleware('auth');;
     Route::get('/','index');
-    Route::get('/galleries/{id}','show');
-    Route::put('edit-galery/{id}','update');
-    Route::delete('{id}','destroy');
+    Route::get('/galleries/{id}','show')->middleware('auth');;
+    Route::put('edit-gallery/{id}','update')->middleware('auth');;
+    Route::delete('{id}','destroy')->middleware('auth');;
 });
 
 Route::controller(CommentsController::class)->group(function(){
-    Route::post('/storecomment','store');
+    Route::post('/storecomment','store')->middleware('auth');;
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Gallery;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -16,10 +17,22 @@ class GalleryController extends Controller
      */
     public function index()
     {
+
         $galleries = Gallery::with('user')->latest()->paginate(10);
         return $galleries;
     }
-
+    public function myGalleries(){
+        $user = Auth::user();
+        if(!$user){
+            return (response()->json(['mesasage'=>'user not found'],404));
+        }
+        
+        $galleries = Gallery::where('user_id', $user->id)
+        ->with('user')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+        return $galleries;
+    }
     /**
      * Show the form for creating a new resource.
      */
@@ -59,7 +72,7 @@ class GalleryController extends Controller
         'name' => $request->input('name'),
         'description' => $request->input('description'),
         'image_urls' => $request->input('image_urls'),
-        'user_id' => $request->input('user_id'),
+        'user_id' => $userId,
         ]);
        
        return response()->json(['message' => 'Gallery created successfully', 'gallery' => $gallery], 201);
@@ -71,10 +84,7 @@ class GalleryController extends Controller
     public function show(string $id)
     {
         $gallery = Gallery::with('comments')->findOrFail($id);
-        return response()->json([
-            'gallery' => $gallery,
-            'comments' => $gallery->comments,
-        ]);
+        return $gallery;
     }
 
     /**
@@ -96,8 +106,7 @@ class GalleryController extends Controller
             'image_urls' => ['required', 'array', 'min:1'],
             'image_urls.*' => ['url', function ($attribute, $value, $fail) {
                 $allowedExtensions = ['jpg', 'jpeg', 'png'];
-    
-                $extension = pathinfo(parse_url($value, PHP_URL_PATH), PATHINFO_EXTENSION);
+                $extension = pathinfo($value, PATHINFO_EXTENSION);
     
                 if (!in_array($extension, $allowedExtensions)) {
                     $fail('The ' . $attribute . ' must be a valid URL pointing to an image (JPG, JPEG, PNG).');
