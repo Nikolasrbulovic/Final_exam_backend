@@ -45,6 +45,18 @@ class GalleryController extends Controller
         
         return $galleries->latest()->paginate(10);
     }
+    public function getUserGalleries(string $id ,Request $request){
+
+        $galleries = Gallery::with('user')->where('user_id', $id);
+        $searchTerm = $request->query('searchTerm');
+        if ($searchTerm) {
+            $galleries->where(function ($query) use($searchTerm) {
+             $query->where('name', 'like', "%$searchTerm%")->orWhere('description', 'like', "%$searchTerm%");
+         });
+         }
+        return $galleries->latest()->paginate(10);
+
+    }
     /**
      * Show the form for creating a new resource.
      */
@@ -95,7 +107,10 @@ class GalleryController extends Controller
      */
     public function show(string $id)
     {
-        $gallery = Gallery::with('comments','user')->findOrFail($id);
+        $gallery = Gallery::with(['comments' => function ($query) {
+            $query->with('user');
+        }])->with('user')->findOrFail($id);
+        
         return $gallery;
     }
 

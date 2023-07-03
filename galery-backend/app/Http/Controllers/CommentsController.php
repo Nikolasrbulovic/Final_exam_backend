@@ -40,7 +40,8 @@ class CommentsController extends Controller
 
         $comment = new Comment();
         $comment->body = $request->body;
-        $comment->gallery()->associate($gallery)->save();
+        
+        $comment->gallery()->associate($gallery);
         $comment->user()->associate($user)->save();
 
         return response()->json([
@@ -55,7 +56,8 @@ class CommentsController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $comment = Comment::with('user')->findOrFail($id);
+        return $comment;
     }
 
     /**
