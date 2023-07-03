@@ -22,7 +22,7 @@ class GalleryController extends Controller
         $galleries = Gallery::with('user');
         if ($searchTerm) {
             $galleries->whereHas('user', function (Builder $query) use($searchTerm) {
-                $query->where('first_name', 'like', "%$searchTerm%");
+                $query->where('first_name', 'like', "%$searchTerm%")->orWhere('last_name', 'like', "%$searchTerm%");
             })->orWhere('name', 'like', "%$searchTerm%")->orWhere('description', 'like', "%$searchTerm%");  
         }
        
@@ -37,9 +37,9 @@ class GalleryController extends Controller
         $galleries = Gallery::with('user')->where('user_id', $user->id);
 
         if ($searchTerm) {
-           $galleries->where(function ($query) use($searchTerm) {
-            $query->where('name', 'like', "%$searchTerm%")->orWhere('description', 'like', "%$searchTerm%");
-        });
+            $galleries->whereHas('user', function (Builder $query) use($searchTerm) {
+                $query->where('first_name', 'like', "%$searchTerm%")->orWhere('last_name', 'like', "%$searchTerm%");
+            })->orWhere('name', 'like', "%$searchTerm%")->orWhere('description', 'like', "%$searchTerm%");  
         }
         
         
@@ -50,10 +50,10 @@ class GalleryController extends Controller
         $galleries = Gallery::with('user')->where('user_id', $id);
         $searchTerm = $request->query('searchTerm');
         if ($searchTerm) {
-            $galleries->where(function ($query) use($searchTerm) {
-             $query->where('name', 'like', "%$searchTerm%")->orWhere('description', 'like', "%$searchTerm%");
-         });
-         }
+            $galleries->whereHas('user', function (Builder $query) use($searchTerm) {
+                $query->where('first_name', 'like', "%$searchTerm%")->orWhere('last_name', 'like', "%$searchTerm%");
+            })->orWhere('name', 'like', "%$searchTerm%")->orWhere('description', 'like', "%$searchTerm%");  
+        }
         return $galleries->latest()->paginate(10);
 
     }
@@ -85,9 +85,9 @@ class GalleryController extends Controller
         ]);
        
       // replace this with user_id from request
-        $userId = Auth::id(); 
+        $user = Auth::user();
+        $userId = $user->id;
         
-    
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
@@ -98,6 +98,7 @@ class GalleryController extends Controller
         'image_urls' => $request->input('image_urls'),
         'user_id' => $userId,
         ]);
+        $gallery->user = $user;
        
        return response()->json(['message' => 'Gallery created successfully', 'gallery' => $gallery], 201);
     }
@@ -145,12 +146,14 @@ class GalleryController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $gallery = Gallery::findOrFail($id);
+        $gallery = Gallery::with('user')->findOrFail($id);
+        $user = Auth::user();
         $userId = Auth::id();
         $gallery->name = $request->input('name');
         $gallery->description = $request->input('description');
         $gallery->image_urls = $request->input('image_urls');
         $gallery->user_id = $userId;
+       // $gallery->user = $user;
         $gallery->save();
 
         return $gallery;
